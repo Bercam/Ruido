@@ -1,0 +1,41 @@
+COMO ATUALIZAR O APLICATIVO:
+
+1. Extraia os arquivos deste ZIP.
+2. Execute: Instalar_Ruido_Branco_Desktop.bat
+3. Ele atualiza o "Ruido Ambiental.exe" na sua Area de Trabalho e abre o app automaticamente.
+
+Requisitos do instalador: .NET Framework 4.5+ (incluido no Windows 10/11).
+
+O app continua rodando na bandeja do Windows (icone ao lado do relogio,
+na setinha de icones ocultos). Use o icone para:
+- Abrir aplicativo
+- Pausar / Retomar audio
+- Abrir pasta de downloads
+- Sair
+
+CONFIGURACAO NOVA:
+Em Ajustes > "Continuar em segundo plano ao fechar" (ativada por padrao):
+ao fechar a janela, o audio continua tocando e o app fica apenas no icone
+da bandeja. Clique no icone para pausar/retomar ou para reabrir a janela.
+Se preferir que o audio pare ao fechar, desative essa opcao.
+
+NOVIDADES DESTA VERSAO:
+- Ate 3 abas na tela: arraste uma aba para a area lateral para abri-la lado
+  a lado (o painel direito mostra quantas abas ainda cabem). Cada painel tem
+  seu proprio botao de fechar; a janela se ajusta automaticamente.
+- Botao de cadeado no topo: bloqueia a edicao (abas, perfis, arquivos,
+  ajustes e arrastar) sem impedir play/pause, volume geral e volume das
+  abinhas. Clique novamente para desbloquear. A preferencia e salva.
+- Download de video do YouTube: no modal de adicionar midia, campo de link,
+  clique em "Baixar video". O arquivo vai para:
+  %LOCALAPPDATA%\RuidoBrancoApp\Downloads
+  Use "Instalar yt-dlp" uma vez (o app baixa o yt-dlp e o Deno dos releases
+  oficiais do GitHub) e "Abrir pasta" para acessar os arquivos. O menu da bandeja tambem abre
+  a pasta de downloads. Baixe apenas conteudo proprio ou autorizado.
+
+NOVIDADES ANTERIORES:
+- A janela abre novamente no ultimo tamanho e posicao em que foi deixada.
+- Em janela bem reduzida, aparecem apenas o grafico do ruido, o botao de
+  pausa e o volume geral. Botao⤢ ou tecla Esc voltam ao modo normal.
+- Nova aba "Equalizacao" com 6 bandas, curva de resposta e presets.
+- Grafico de espectro com mais barras, suavizacao e maior nitidez.
