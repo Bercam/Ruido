@@ -1,4 +1,4 @@
-# Ruido Ambiental
+# Ruido 
 
 Aplicativo desktop (Windows) para gerar ruído branco/complementar com sons ambiente e áudio do YouTube. Funciona como um servidor local aberto no navegador, com execução em segundo plano e controle na bandeja.
 
