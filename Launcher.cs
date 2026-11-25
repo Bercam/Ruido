@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Management;
 using System.Net;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -25,7 +26,7 @@ namespace RuidoBrancoLauncher
         const int PreferredPort = 48723;
 
         static string appDir;
-        static string htmlFilePath;
+        static byte[] uiContent;
         static string baseUrl;
         static HttpListener listener;
         static NotifyIcon trayIcon;
@@ -36,6 +37,7 @@ namespace RuidoBrancoLauncher
         static volatile bool backgroundHostActive = false;
         static volatile bool playbackPlaying = false;
         static long lastUiHeartbeatTicks;
+        static int closePromptPending = 0;
         static readonly object commandLock = new object();
         static int commandSeq = 0;
         static string pendingCommand = "none";
@@ -77,9 +79,9 @@ namespace RuidoBrancoLauncher
                 );
                 if (!Directory.Exists(appDir)) Directory.CreateDirectory(appDir);
 
-                htmlFilePath = Path.Combine(appDir, "index.html");
                 downloadsDir = Path.Combine(appDir, DownloadsDirName);
                 if (!Directory.Exists(downloadsDir)) Directory.CreateDirectory(downloadsDir);
+                uiContent = LoadEmbeddedInterface();
 
                 bool createdNew;
                 using (Mutex mutex = new Mutex(true, MutexName, out createdNew))
@@ -91,11 +93,11 @@ namespace RuidoBrancoLauncher
                         return;
                     }
 
-                    if (!File.Exists(htmlFilePath))
+                    if (uiContent == null)
                     {
                         ShowError(
-                            "Arquivo de interface nao encontrado em:\n" + htmlFilePath +
-                            "\n\nExecute novamente o Instalar_Ruido_Branco_Desktop.bat."
+                            "A interface do aplicativo nao foi encontrada no executavel.\n\n" +
+                            "Baixe novamente o instalador oficial do Ruido Ambiental."
                         );
                         return;
                     }
@@ -136,6 +138,28 @@ namespace RuidoBrancoLauncher
                 keepRunning = false;
                 StopListener();
                 DisposeTrayIcon();
+            }
+        }
+
+        static byte[] LoadEmbeddedInterface()
+        {
+            try
+            {
+                using (Stream resource = Assembly.GetExecutingAssembly()
+                    .GetManifestResourceStream("RuidoBrancoLauncher.index.html"))
+                {
+                    if (resource == null) return null;
+                    using (MemoryStream content = new MemoryStream())
+                    {
+                        resource.CopyTo(content);
+                        return content.ToArray();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowError("Falha ao carregar a interface do aplicativo:\n\n" + ex.Message);
+                return null;
             }
         }
 
@@ -328,7 +352,7 @@ namespace RuidoBrancoLauncher
                     }
                     else if (path == "/window-closed")
                     {
-                        if (backgroundModeEnabled) ScheduleBackgroundHostCheck();
+                        ScheduleBackgroundHostCheck();
                         ctx.Response.StatusCode = 204;
                     }
                     else if (path == "/download-status")
@@ -425,7 +449,7 @@ namespace RuidoBrancoLauncher
                     }
                     else
                     {
-                        byte[] content = File.ReadAllBytes(htmlFilePath);
+                        byte[] content = uiContent;
                         ctx.Response.ContentType = "text/html; charset=utf-8";
                         ctx.Response.AddHeader("Cache-Control", "no-store");
                         ctx.Response.ContentLength64 = content.Length;
@@ -739,6 +763,7 @@ namespace RuidoBrancoLauncher
                 MethodInvoker update = delegate
                 {
                     playPauseMenuItem.Text = playbackPlaying ? "Pausar áudio" : "Retomar áudio";
+                    trayIcon.Text = playbackPlaying ? "Ruído Ambiental - Reproduzindo" : "Ruído Ambiental - Pausado";
                 };
                 if (trayIcon.ContextMenuStrip.InvokeRequired) trayIcon.ContextMenuStrip.BeginInvoke(update);
                 else update();
@@ -749,14 +774,65 @@ namespace RuidoBrancoLauncher
         static void ScheduleBackgroundHostCheck()
         {
             long beaconTicks = DateTime.UtcNow.Ticks;
-            ThreadPool.QueueUserWorkItem(delegate(object state)
+            if (Interlocked.CompareExchange(ref closePromptPending, 1, 0) != 0) return;
+
+            Thread promptThread = new Thread(delegate()
             {
-                Thread.Sleep(1200);
-                if (!backgroundModeEnabled || backgroundHostActive) return;
-                // Se a pagina enviou um heartbeat depois do beacon, foi apenas um refresh.
-                if (Interlocked.Read(ref lastUiHeartbeatTicks) > beaconTicks) return;
-                StartBackgroundHost();
+                try
+                {
+                    Thread.Sleep(1500);
+                    if (backgroundHostActive) return;
+                    // Um heartbeat posterior ao beacon indica apenas um refresh da janela.
+                    if (Interlocked.Read(ref lastUiHeartbeatTicks) > beaconTicks) return;
+
+                    string message = playbackPlaying
+                        ? "O áudio ainda está tocando. Como deseja continuar?"
+                        : "O Ruído Ambiental está pausado. Como deseja continuar?";
+                    message += "\n\nSim: encerrar o aplicativo e parar o áudio." +
+                               (backgroundModeEnabled
+                                   ? "\nNão: manter o aplicativo na bandeja do Windows."
+                                   : "\nNão: voltar ao aplicativo. Ative o segundo plano nas configurações para mantê-lo na bandeja.");
+
+                    DialogResult choice = MessageBox.Show(
+                        message,
+                        "Ruído Ambiental",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question,
+                        MessageBoxDefaultButton.Button1
+                    );
+
+                    if (choice == DialogResult.No)
+                    {
+                        if (!backgroundModeEnabled)
+                        {
+                            OpenBrowser(baseUrl, BuildWindowArgs());
+                        }
+                        else if (!StartBackgroundHost())
+                        {
+                            ShowError("Não foi possível manter o áudio em segundo plano. Verifique se o Microsoft Edge ou o Google Chrome está instalado.");
+                            OpenBrowser(baseUrl, BuildWindowArgs());
+                        }
+                    }
+                    else
+                    {
+                        CloseBackgroundHost();
+                        CloseProfileBrowsers(Path.Combine(appDir, "WebProfile"));
+                        Application.Exit();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowError("Não foi possível concluir o fechamento do aplicativo:\n\n" + ex.Message);
+                    OpenBrowser(baseUrl, BuildWindowArgs());
+                }
+                finally
+                {
+                    Interlocked.Exchange(ref closePromptPending, 0);
+                }
             });
+            promptThread.IsBackground = true;
+            promptThread.SetApartmentState(ApartmentState.STA);
+            promptThread.Start();
         }
 
         static HashSet<int> GetAudioHostPids()
@@ -812,11 +888,11 @@ namespace RuidoBrancoLauncher
             return null;
         }
 
-        static void StartBackgroundHost()
+        static bool StartBackgroundHost()
         {
-            if (backgroundHostActive) return;
+            if (backgroundHostActive) return true;
             string browser = FindBrowserPath();
-            if (string.IsNullOrEmpty(browser)) return;
+            if (string.IsNullOrEmpty(browser)) return false;
 
             backgroundHostActive = true;
             try
@@ -838,7 +914,7 @@ namespace RuidoBrancoLauncher
             catch (Exception)
             {
                 backgroundHostActive = false;
-                return;
+                return false;
             }
 
             ThreadPool.QueueUserWorkItem(delegate(object state)
@@ -854,6 +930,7 @@ namespace RuidoBrancoLauncher
                     }
                 }
             });
+            return true;
         }
 
         static void CloseBackgroundHost()
@@ -879,8 +956,8 @@ namespace RuidoBrancoLauncher
                 trayIcon = new NotifyIcon();
                 string iconPath = Path.Combine(appDir, "app.ico");
                 if (File.Exists(iconPath)) trayIcon.Icon = new Icon(iconPath);
-                else trayIcon.Icon = SystemIcons.Application;
-                trayIcon.Text = "Ruido Ambiental";
+                else trayIcon.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? SystemIcons.Application;
+                trayIcon.Text = "Ruído Ambiental - Pausado";
                 trayIcon.Visible = true;
 
                 ContextMenuStrip menu = new ContextMenuStrip();
@@ -898,7 +975,8 @@ namespace RuidoBrancoLauncher
                     try { Process.Start("explorer.exe", "\"" + downloadsDir + "\""); }
                     catch (Exception) { }
                 });
-                menu.Items.Add("Sair", null, delegate(object sender, EventArgs e)
+                menu.Items.Add(new ToolStripSeparator());
+                menu.Items.Add("Encerrar aplicativo e áudio", null, delegate(object sender, EventArgs e)
                 {
                     CloseBackgroundHost();
                     CloseProfileBrowsers(Path.Combine(appDir, "WebProfile"));

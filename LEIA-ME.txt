@@ -2,24 +2,33 @@ COMO ATUALIZAR O APLICATIVO:
 
 1. Extraia os arquivos deste ZIP.
 2. Execute: Instalar_Ruido_Branco_Desktop.bat
-3. Ele atualiza o "Ruido Ambiental.exe" na sua Area de Trabalho e abre o app automaticamente.
+3. Marque ou desmarque a opção para criar um atalho na Área de Trabalho.
+4. O instalador coloca o executável em %LOCALAPPDATA%\RuidoBrancoApp e abre o app.
+5. Para remover o aplicativo, execute Desinstalar_Ruido_Branco_Desktop.bat no
+   ZIP baixado ou na pasta %LOCALAPPDATA%\RuidoBrancoApp.
+   Por padrao, downloads e configuracoes salvas sao mantidos; o desinstalador
+   oferece a opcao de apaga-los tambem.
 
-Requisitos do instalador: .NET Framework 4.5+ (incluido no Windows 10/11).
+O pacote pronto inclui o executável e não exige Node.js. Requisitos: Windows com
+.NET Framework 4.5+ (incluído no Windows 10/11) e Chrome ou Edge.
 
 O app continua rodando na bandeja do Windows (icone ao lado do relogio,
 na setinha de icones ocultos). Use o icone para:
 - Abrir aplicativo
 - Pausar / Retomar audio
 - Abrir pasta de downloads
-- Sair
+- Encerrar aplicativo e audio
 
 CONFIGURACAO NOVA:
-Em Ajustes > "Continuar em segundo plano ao fechar" (ativada por padrao):
-ao fechar a janela, o audio continua tocando e o app fica apenas no icone
-da bandeja. Clique no icone para pausar/retomar ou para reabrir a janela.
-Se preferir que o audio pare ao fechar, desative essa opcao.
+Ao fechar a janela, um aviso pergunta se deseja encerrar o aplicativo e parar
+o audio ou manter o app na bandeja do Windows. Em Ajustes > "Permitir audio
+em segundo plano" (ativada por padrao), voce pode desativar a opcao de manter
+o app na bandeja. Use o icone para pausar/retomar ou reabrir a janela.
 
 NOVIDADES DESTA VERSAO:
+- Perfis identificados por simbolos, com escolha de icone e cor.
+- Abinha redesenhada como mini-player com status da reproducao, volume geral
+  e botao para expandir.
 - Ate 3 abas na tela: arraste uma aba para a area lateral para abri-la lado
   a lado (o painel direito mostra quantas abas ainda cabem). Cada painel tem
   seu proprio botao de fechar; a janela se ajusta automaticamente.
@@ -39,3 +48,12 @@ NOVIDADES ANTERIORES:
   pausa e o volume geral. Botao⤢ ou tecla Esc voltam ao modo normal.
 - Nova aba "Equalizacao" com 6 bandas, curva de resposta e presets.
 - Grafico de espectro com mais barras, suavizacao e maior nitidez.
+
+SONS E PERFIS:
+- Sons personalizados e ruidos base adicionados podem ser editados pelo botao
+  de edicao: altere o nome, o link do YouTube ou substitua o arquivo local.
+- A biblioteca inclui chuva, vento, cachoeira, passaros, cigarras, ondas do
+  mar, riacho, lareira e trovao distante. Os sons ambientes sao sintetizados
+  localmente e podem ser ajustados individualmente.
+- Ajustes de som e equalizacao sao salvos no perfil ao troca-lo e antes de
+  fechar a janela.

@@ -1,33 +1,43 @@
-# Ruido 
+# Ruído Ambiental
 
-Aplicativo desktop (Windows) para gerar ruído branco/complementar com sons ambiente e áudio do YouTube. Funciona como um servidor local aberto no navegador, com execução em segundo plano e controle na bandeja.
+Aplicativo desktop para Windows para gerar ruídos e sons ambiente, usar arquivos locais e reproduzir áudio do YouTube. O launcher executável abre a interface no navegador, mantém o áudio em segundo plano e adiciona controles na bandeja do sistema.
 
-## Arquivos
+## Baixar e instalar
 
-| Arquivo | Função |
-| --- | --- |
-| `index.html` | Interface web (UI, áudio Web Audio, configurações, perfis, equalizador) |
-| `Launcher.cs` | Launcher C#: servidor HTTP local, bandeja, single-instance, downloads |
-| `Instalar_Ruido_Branco_Desktop.bat` | Compila e instala o executável na Área de Trabalho |
-| `app.ico` | Ícone do executável e da bandeja |
-| `LEIA-ME.txt` | Instruções de uso em português |
+1. Baixe `Ruido Ambiental.exe` para executar o aplicativo diretamente, ou baixe `Ruido-Ambiental-Windows.zip` para instalar.
+2. No ZIP, execute `Instalar_Ruido_Branco_Desktop.bat`.
+3. Na janela de opções, deixe **Criar atalho na Área de Trabalho** marcado para criar o atalho ou desmarque para não criar.
 
-## Instalação / atualização
+O instalador coloca o executável em `%LOCALAPPDATA%\RuidoBrancoApp` e abre o aplicativo. O desinstalador fica disponível como `Desinstalar_Ruido_Branco_Desktop.bat` no ZIP, como asset separado na página Releases e na pasta instalada. Por padrão, ele mantém downloads e configurações; uma opção permite apagá-los também. O executável inclui a interface e não exige Node.js. É necessário Windows com .NET Framework 4.5+ e Chrome ou Edge.
 
-1. Baixe os arquivos deste repositório.
-2. Execute `Instalar_Ruido_Branco_Desktop.bat`.
-3. O script gera `Ruido Ambiental.exe` na Área de Trabalho e abre o app.
+As versões prontas ficam na página **Releases** do GitHub. Para compilar a partir do código-fonte, use Node.js 20+ e .NET Framework:
 
-Requisitos: Windows com .NET Framework 4.5+ (presente no Windows 10/11) e navegador Chrome ou Edge. O instalador usa o compilador `csc.exe` do próprio Windows.
+```powershell
+npm ci
+npm test
+npm run build
+```
+
+O build gera `dist/index.html` como um único arquivo, que pode ser incorporado ao launcher C#.
+
+## Arquitetura
+
+- `src/main.ts`: interface, interação e integração com Web Audio.
+- `src/styles.css`: estilos e comportamento responsivo.
+- `src/state/persistence.ts`: migração, mesclagem segura de padrões e persistência dos perfis/configurações.
+- `Launcher.cs`: servidor HTTP local, bandeja do sistema, instância única e downloads do YouTube.
+- `vite.config.ts`: empacota TypeScript e CSS em um HTML único, integrado ao executável.
 
 ## Uso básico
 
 - **Iniciar/pausar áudio:** botão principal ou ícone na bandeja.
-- **Sons:** aba "Ruído" (base) e "Sons" (chuva, vento, cachoeira, pássaros, etc.).
-- **Perfis:** salvar e alternar configurações na barra lateral.
-- **Equalização:** aba com 6 bandas e presets. Afeta o áudio gerado pelo app e arquivos locais (não o YouTube).
-- **Modo compacto:** botão da abinha redimensiona a janela; `Esc` ou botão ⤢ voltam ao normal.
-- **Segundo plano:** ao fechar a janela, o áudio continua (padrão). Use a bandeja para pausar, reabrir ou sair.
+- **Sons:** aba "Ruído" (base) e "Sons" (chuva, vento, cachoeira, pássaros, ondas, riacho, lareira e trovão distante); os sons ambientes são sintetizados localmente e têm controles individuais de volume e intensidade/tom.
+- **Mídias adicionadas:** edite o nome, link do YouTube ou arquivo local de qualquer som ou ruído personalizado pelo botão de edição. Os arquivos locais ficam no IndexedDB.
+- **Perfis:** salvar e alternar configurações na barra lateral; cada perfil tem símbolo e cor próprios.
+- **Equalização:** aba com 6 bandas e presets. Afeta ruído e arquivos locais, mas não o áudio incorporado do YouTube.
+- **Modo compacto:** a abinha abre um mini-player com status, volume e botão para expandir; `Esc` também volta ao normal.
+- **Fechamento:** ao fechar a janela, uma confirmação permite encerrar o aplicativo e o áudio ou manter o app na bandeja. A opção de segundo plano pode ser desativada nas configurações.
+- **Bandeja do Windows:** o ícone mostra o estado de reprodução; use o menu para abrir, pausar/retomar, acessar downloads ou encerrar.
 - **Até 3 painéis:** arraste abas para a área lateral para abrir lado a lado.
 - **Cadeado:** bloqueia alteração de parâmetros e configurações; permite navegar entre abas/perfis, play/pause e volume geral.
 
@@ -43,7 +53,7 @@ Baixe apenas conteúdo próprio ou autorizado. O app não contorna restrições 
 
 ## Dados locais
 
-- Configurações e perfis: `localStorage` do navegador (chave `ruido_ambiental_cache_v7`).
+- Configurações, parâmetros e perfis: `localStorage` do navegador (chave `ruido_ambiental_cache_v7`); versões anteriores são migradas automaticamente. Ajustes de som e equalização são capturados ao trocar de perfil e antes de fechar a janela.
 - Posição da janela: `%LOCALAPPDATA%\RuidoBrancoApp\window.bounds`.
 - Perfil do navegador: `%LOCALAPPDATA%\RuidoBrancoApp\WebProfile`.
 - Arquivos de mídia locais: IndexedDB do navegador.
