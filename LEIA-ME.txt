@@ -19,11 +19,10 @@ na setinha de icones ocultos). Use o icone para:
 - Abrir pasta de downloads
 - Encerrar aplicativo e audio
 
-CONFIGURACAO NOVA:
-Ao fechar a janela, um aviso pergunta se deseja encerrar o aplicativo e parar
-o audio ou manter o app na bandeja do Windows. Em Ajustes > "Permitir audio
-em segundo plano" (ativada por padrao), voce pode desativar a opcao de manter
-o app na bandeja. Use o icone para pausar/retomar ou reabrir a janela.
+AO FECHAR A JANELA:
+Toda vez que fechar a janela, um aviso pergunta se deseja manter o audio e o
+aplicativo em segundo plano ou encerrar o aplicativo e parar o audio. Use o
+icone na bandeja para pausar/retomar o audio ou reabrir a janela.
 
 NOVIDADES DESTA VERSAO:
 - Perfis identificados por simbolos, com escolha de icone e cor.

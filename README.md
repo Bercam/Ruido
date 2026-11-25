@@ -38,7 +38,7 @@ O build gera `dist/index.html` como um único arquivo, que pode ser incorporado 
 - **Perfis:** salvar e alternar configurações na barra lateral; cada perfil tem símbolo e cor próprios.
 - **Equalização:** aba com 6 bandas e presets. Afeta ruído e arquivos locais, mas não o áudio incorporado do YouTube.
 - **Modo compacto:** a abinha abre um mini-player com status, volume e botão para expandir; `Esc` também volta ao normal.
-- **Fechamento:** ao fechar a janela, uma confirmação permite encerrar o aplicativo e o áudio ou manter o app na bandeja. A opção de segundo plano pode ser desativada nas configurações.
+- **Fechamento:** toda vez que fechar a janela, uma confirmação pergunta se deseja manter o áudio/app em segundo plano ou encerrar o aplicativo e parar o áudio.
 - **Bandeja do Windows:** o ícone mostra o estado de reprodução; use o menu para abrir, pausar/retomar, acessar downloads ou encerrar.
 - **Até 3 painéis:** arraste abas para a área lateral para abrir lado a lado.
 - **Cadeado:** bloqueia alteração de parâmetros e configurações; permite navegar entre abas/perfis, play/pause e volume geral.
@@ -69,7 +69,6 @@ O launcher expõe apenas `127.0.0.1` na porta 48723 (ou primeira disponível):
 | `GET /` | Interface |
 | `GET /get-command?since=N` | Comandos da bandeja (`seq|cmd`) |
 | `POST/GET /playback-state?playing=1` | Estado de reprodução |
-| `GET /background-mode?enabled=1` | Ativa/desativa segundo plano |
 | `GET /page-alive` | Heartbeat da UI |
 | `GET /window-closed` | Sinaliza janela fechada |
 | `GET /bounds?x=&y=&w=&h=` / `GET /get-bounds` | Posição da janela |

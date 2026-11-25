@@ -231,7 +231,6 @@ let ytApiReady = false;
     autoPlay: false,
     autoPip: false,
     startCompact: false,
-    runInBackground: true,
     uiLocked: false,
     scrollStep: 2
   };
@@ -1219,7 +1218,6 @@ let ytApiReady = false;
   const cfgAutoPlay = document.getElementById('cfgAutoPlay') as HTMLInputElement;
   const cfgAutoPip = document.getElementById('cfgAutoPip') as HTMLInputElement;
   const cfgStartCompact = document.getElementById('cfgStartCompact') as HTMLInputElement;
-  const cfgRunInBackground = document.getElementById('cfgRunInBackground') as HTMLInputElement;
   const cfgScrollStep = document.getElementById('cfgScrollStep') as HTMLInputElement;
   const resetCacheBtn = document.getElementById('resetCacheBtn');
 
@@ -2263,7 +2261,6 @@ let ytApiReady = false;
     cfgAutoPlay.checked = !!appState.settings.autoPlay;
     cfgAutoPip.checked = !!appState.settings.autoPip;
     cfgStartCompact.checked = !!appState.settings.startCompact;
-    cfgRunInBackground.checked = appState.settings.runInBackground !== false;
     cfgScrollStep.value = String(appState.settings.scrollStep || 2);
 
     cfgAutoPlay.addEventListener('change', (e: any) => {
@@ -2283,12 +2280,6 @@ let ytApiReady = false;
       saveCache(true);
       if (e.target.checked) enterCompactMode();
       else exitCompactMode();
-    });
-
-    cfgRunInBackground.addEventListener('change', (e: any) => {
-      appState.settings.runInBackground = e.target.checked;
-      saveCache(true);
-      fetch('/background-mode?enabled=' + (e.target.checked ? 1 : 0), { cache: 'no-store' }).catch(() => {});
     });
 
     cfgScrollStep.addEventListener('change', (e: any) => {
@@ -2836,7 +2827,6 @@ let ytApiReady = false;
     if (isAudioHost) {
       reportPlaybackState();
     } else {
-      fetch('/background-mode?enabled=' + (appState.settings.runInBackground !== false ? 1 : 0), { cache: 'no-store' }).catch(() => {});
       fetch('/page-alive', { cache: 'no-store' }).catch(() => {});
       setInterval(() => fetch('/page-alive', { cache: 'no-store' }).catch(() => {}), 1200);
       if (appState.settings.startCompact) {

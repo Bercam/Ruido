@@ -33,7 +33,6 @@ namespace RuidoBrancoLauncher
         static volatile bool keepRunning = true;
 
         static ToolStripMenuItem playPauseMenuItem;
-        static volatile bool backgroundModeEnabled = true;
         static volatile bool backgroundHostActive = false;
         static volatile bool playbackPlaying = false;
         static long lastUiHeartbeatTicks;
@@ -338,11 +337,6 @@ namespace RuidoBrancoLauncher
                     {
                         playbackPlaying = GetQueryValue(ctx, "playing") == "1";
                         RefreshTrayMenu();
-                        ctx.Response.StatusCode = 204;
-                    }
-                    else if (path == "/background-mode")
-                    {
-                        backgroundModeEnabled = GetQueryValue(ctx, "enabled") == "1";
                         ctx.Response.StatusCode = 204;
                     }
                     else if (path == "/page-alive")
@@ -781,17 +775,13 @@ namespace RuidoBrancoLauncher
                 try
                 {
                     Thread.Sleep(1500);
-                    if (backgroundHostActive) return;
                     // Um heartbeat posterior ao beacon indica apenas um refresh da janela.
                     if (Interlocked.Read(ref lastUiHeartbeatTicks) > beaconTicks) return;
 
                     string message = playbackPlaying
-                        ? "O áudio ainda está tocando. Como deseja continuar?"
-                        : "O Ruído Ambiental está pausado. Como deseja continuar?";
-                    message += "\n\nSim: encerrar o aplicativo e parar o áudio." +
-                               (backgroundModeEnabled
-                                   ? "\nNão: manter o aplicativo na bandeja do Windows."
-                                   : "\nNão: voltar ao aplicativo. Ative o segundo plano nas configurações para mantê-lo na bandeja.");
+                        ? "O áudio ainda está tocando. Deseja mantê-lo em segundo plano?"
+                        : "O Ruído Ambiental está pausado. Deseja manter o aplicativo em segundo plano?";
+                    message += "\n\nSim: manter em segundo plano.\nNão: encerrar o aplicativo e parar o áudio.";
 
                     DialogResult choice = MessageBox.Show(
                         message,
@@ -801,13 +791,9 @@ namespace RuidoBrancoLauncher
                         MessageBoxDefaultButton.Button1
                     );
 
-                    if (choice == DialogResult.No)
+                    if (choice == DialogResult.Yes)
                     {
-                        if (!backgroundModeEnabled)
-                        {
-                            OpenBrowser(baseUrl, BuildWindowArgs());
-                        }
-                        else if (!StartBackgroundHost())
+                        if (!StartBackgroundHost())
                         {
                             ShowError("Não foi possível manter o áudio em segundo plano. Verifique se o Microsoft Edge ou o Google Chrome está instalado.");
                             OpenBrowser(baseUrl, BuildWindowArgs());
