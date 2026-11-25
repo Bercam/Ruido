@@ -36,7 +36,7 @@ jobs:
           }
           & $csc /nologo /target:winexe /win32icon:app.ico /resource:dist/index.html,RuidoBrancoLauncher.index.html "/out:$package\Ruido Ambiental.exe" /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.Management.dll /reference:System.IO.Compression.dll /reference:System.IO.Compression.FileSystem.dll Launcher.cs
           if ($LASTEXITCODE -ne 0) { throw "Executable compilation failed." }
-          Copy-Item Instalar_Ruido_Branco_Desktop.bat,Instalar_Opcoes.ps1,Desinstalar_Ruido_Branco_Desktop.bat,Desinstalar_Opcoes.ps1,app.ico,README.md,LEIA-ME.txt -Destination $package
+          Copy-Item Instalar_Ruido_Branco_Desktop.bat,Instalar.ps1,Desinstalar_Ruido_Branco_Desktop.bat,Desinstalar_Opcoes.ps1,app.ico,README.md,LEIA-ME.txt -Destination $package
           Compress-Archive -Path "$package\*" -DestinationPath "Ruido-Ambiental-Windows.zip" -Force
           Copy-Item "$package\Ruido Ambiental.exe" "Ruido Ambiental.exe"
       - name: Publish release assets

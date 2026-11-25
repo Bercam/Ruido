@@ -10,6 +10,8 @@ Aplicativo desktop para Windows para gerar ruídos e sons ambiente, usar arquivo
 
 O instalador coloca o executável em `%LOCALAPPDATA%\RuidoBrancoApp` e abre o aplicativo. O desinstalador fica disponível como `Desinstalar_Ruido_Branco_Desktop.bat` no ZIP, como asset separado na página Releases e na pasta instalada. Por padrão, ele mantém downloads e configurações; uma opção permite apagá-los também. O executável inclui a interface e não exige Node.js. É necessário Windows com .NET Framework 4.5+ e Chrome ou Edge.
 
+Se a instalação falhar, uma janela explica o problema e orienta como prosseguir. Os detalhes técnicos são salvos em um arquivo de registro na pasta temporária do Windows.
+
 As versões prontas ficam na página **Releases** do GitHub. Para compilar a partir do código-fonte, use Node.js 20+ e .NET Framework:
 
 ```powershell
