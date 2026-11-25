@@ -1,0 +1,47 @@
+name: Windows release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install, test, and build
+        run: |
+          npm ci
+          npm test
+          npm run build
+      - name: Package standalone executable
+        shell: pwsh
+        run: |
+          $package = Join-Path $PWD "release-package"
+          New-Item -ItemType Directory -Force -Path $package | Out-Null
+          $csc = "$env:SystemRoot\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
+          if (-not (Test-Path $csc)) {
+            $csc = "$env:SystemRoot\Microsoft.NET\Framework\v4.0.30319\csc.exe"
+          }
+          if (-not (Test-Path $csc)) {
+            throw "The .NET Framework C# compiler was not found."
+          }
+          & $csc /nologo /target:winexe /win32icon:app.ico /resource:dist/index.html,RuidoBrancoLauncher.index.html "/out:$package\Ruido Ambiental.exe" /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.Management.dll /reference:System.IO.Compression.dll /reference:System.IO.Compression.FileSystem.dll Launcher.cs
+          if ($LASTEXITCODE -ne 0) { throw "Executable compilation failed." }
+          Copy-Item Instalar_Ruido_Branco_Desktop.bat,Instalar_Opcoes.ps1,Desinstalar_Ruido_Branco_Desktop.bat,Desinstalar_Opcoes.ps1,app.ico,README.md,LEIA-ME.txt -Destination $package
+          Compress-Archive -Path "$package\*" -DestinationPath "Ruido-Ambiental-Windows.zip" -Force
+          Copy-Item "$package\Ruido Ambiental.exe" "Ruido Ambiental.exe"
+      - name: Publish release assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$env:GITHUB_REF_NAME" "Ruido Ambiental.exe" "Ruido-Ambiental-Windows.zip" "Desinstalar_Ruido_Branco_Desktop.bat" "Desinstalar_Opcoes.ps1" --title "Ruído Ambiental $env:GITHUB_REF_NAME" --generate-notes
